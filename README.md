@@ -6,6 +6,8 @@ Rodamos es una webapp para descubrir salidas grupales en bicicleta. Reúne en un
 
 > **Estado: prototipo de MVP.** Es una interfaz funcional con datos de demostración ficticios. Todavía no tiene base de datos, panel de administración ni despliegue propio. Ver [Limitaciones](#limitaciones).
 
+**Demo en vivo:** `https://<tu-usuario>.github.io/<nombre-del-repo>/` (reemplazá por tu URL de GitHub Pages cuando la actives).
+
 ## Qué hace hoy
 
 - **Agenda cronológica** con la hora como eje visual y las salidas ordenadas por fecha y hora.
@@ -38,12 +40,12 @@ No hay paso de compilación ni dependencias que instalar. Todo el proyecto es un
 
 ```bash
 # Opción 1: abrirlo directamente
-open rodamos.html          # macOS
-xdg-open rodamos.html      # Linux
+open index.html          # macOS
+xdg-open index.html      # Linux
 
 # Opción 2: servirlo localmente
 python3 -m http.server 8000
-# luego abrir http://localhost:8000/rodamos.html
+# luego abrir http://localhost:8000/index.html
 ```
 
 La tipografía (Bricolage Grotesque) se carga desde Google Fonts. Sin conexión, la app funciona igual con las fuentes del sistema.
@@ -51,11 +53,11 @@ La tipografía (Bricolage Grotesque) se carga desde Google Fonts. Sin conexión,
 ## Estructura
 
 ```
-rodamos.html   # HTML, CSS y JavaScript en un solo archivo
+index.html   # HTML, CSS y JavaScript en un solo archivo
 README.md
 ```
 
-Dentro de `rodamos.html`:
+Dentro de `index.html`:
 
 | Bloque | Contenido |
 |---|---|
@@ -115,3 +117,6 @@ Solo las salidas publicadas y vigentes deben aparecer en el catálogo público. 
 
 No se exige registro ni datos personales para consultar salidas, y no se recopila ubicación. Los enlaces apuntan a fuentes públicas o autorizadas por los organizadores.
 
+## Licencia
+
+Distribuido bajo licencia MIT. Ver el archivo [LICENSE](LICENSE).
