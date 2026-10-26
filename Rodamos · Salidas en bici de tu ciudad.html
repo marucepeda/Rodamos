@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rodamos · Salidas en bici de tu ciudad</title>
+<meta name="description" content="Descubrí cuándo, desde dónde y hacia dónde salen los grupos ciclistas de tu ciudad.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap">
+<style>
+:root{color-scheme:light dark;--bg:#fff;--surface:#f5f5f5;--text:#111;--muted:#666;--rule:#d6d6d6;--ctl:#767676;--on:#111;--on-text:#fff;--err-text:#a12016;--err-icon:#c23b2e;--err-border:#c23b2e;--err-bg:#fdf1ef;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-theme="light"]{color-scheme:light}
+/* Los dos bloques oscuros deben tener los mismos valores */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121212;--surface:#1a1a1a;--text:#f2f2f2;--muted:#a3a3a3;--rule:#2e2e2e;--ctl:#737373;--on:#f2f2f2;--on-text:#111;--err-text:#ff9b90;--err-icon:#ff7a6c;--err-border:#d9655a;--err-bg:#2e1a18}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#121212;--surface:#1a1a1a;--text:#f2f2f2;--muted:#a3a3a3;--rule:#2e2e2e;--ctl:#737373;--on:#f2f2f2;--on-text:#111;--err-text:#ff9b90;--err-icon:#ff7a6c;--err-border:#d9655a;--err-bg:#2e1a18}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:400 16px/1.45 "Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--text);outline-offset:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+header.top{border-bottom:1px solid var(--rule)}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0}
+.brand{font-weight:800;font-size:22px;letter-spacing:-.03em;text-decoration:none;display:flex;align-items:center;gap:8px}
+.brand svg{width:26px;height:26px}
+.bar select{background:var(--bg);border:1px solid var(--ctl);border-radius:4px;padding:8px 10px;min-height:44px;max-width:44vw}
+.ttl{font-size:clamp(40px,10vw,92px);line-height:.92;letter-spacing:-.045em;font-weight:800;margin:28px 0 16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 18px;border-radius:4px;border:1px solid var(--on);background:var(--on);color:var(--on-text);font-weight:600;text-decoration:none;cursor:pointer}
+.btn.alt{background:transparent;color:var(--text);border-color:var(--ctl)}
+.btn.sm{min-height:40px;padding:0 14px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.strip{position:relative;display:flex;gap:2px;overflow-x:auto;padding:4px 0 0;border-bottom:1px solid var(--rule)}
+.day{flex:0 0 auto;min-width:52px;min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:0;border-bottom:4px solid transparent;background:transparent;cursor:pointer;padding:4px 8px;line-height:1.15;color:var(--muted)}
+.day span,.day i{font-size:12px;font-style:normal}
+.day b{font-size:24px;letter-spacing:-.03em;color:var(--text)}
+.day.txt{padding:0 14px;font-weight:600;min-width:auto;color:var(--text)}
+.day.txt:nth-child(2){margin-right:12px;border-right:1px solid var(--rule)}
+.day[aria-pressed="true"]{border-bottom-color:var(--text);color:var(--text);font-weight:800}
+.layout{display:grid;gap:20px;padding:20px 0 48px}
+@media(min-width:860px){.layout{grid-template-columns:240px 1fr;align-items:start;gap:40px}.filters{position:sticky;top:12px}.fbtn{display:none}.filters .fbody{display:block!important}}
+.fbtn{width:100%}
+.fbody{display:none;margin-top:12px}
+.fbody.open{display:block}
+fieldset{border:0;padding:0;margin:0 0 16px}
+legend,.lab{font-weight:600;font-size:14px;margin-bottom:6px;padding:0;display:block}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opt{position:relative}
+.opt input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.opt span{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border:1px solid var(--ctl);border-radius:4px;font-size:14px}
+.opt input:checked+span{background:var(--on);color:var(--on-text);border-color:var(--on)}
+.opt input:focus-visible+span{outline:3px solid var(--text);outline-offset:2px}
+.field{width:100%;min-height:44px;padding:0 10px;border:1px solid var(--ctl);border-radius:4px;background:var(--bg)}
+.field[aria-invalid="true"]{border-color:var(--err-border);box-shadow:inset 4px 0 0 var(--err-border)}
+.res-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px;margin-bottom:12px}
+.res-head h2{margin:0;font-size:clamp(22px,4vw,30px);letter-spacing:-.03em;line-height:1.1}
+.cal{display:flex;align-items:center;gap:8px;font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chip{background:var(--surface);border-radius:4px;padding:4px 10px;font-size:13px}
+.meta{color:var(--muted);font-size:15px;margin:0}
+.agenda{list-style:none;margin:0 0 16px;padding:0;border-top:1px solid var(--text)}
+.ride{display:grid;grid-template-columns:64px 1fr;gap:4px 12px;padding:16px 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.time{font-weight:800;font-size:28px;letter-spacing:-.04em;font-variant-numeric:tabular-nums;line-height:1}
+.dest{margin:0;font-size:20px;letter-spacing:-.02em;line-height:1.15}
+.facts{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;margin:4px 0}
+.facts b{font-weight:800}.facts span{color:var(--muted)}
+.st{font-style:normal;background:var(--on);color:var(--on-text);padding:0 8px;border-radius:3px;font-size:13px;font-weight:600}
+.st.soft{background:var(--surface);color:var(--muted)}
+.ride .act{grid-column:2;font-size:14px;text-decoration:underline;text-underline-offset:3px}
+.ride.off .time,.ride.off .dest{text-decoration:line-through;color:var(--muted)}
+.gh{font-size:16px;margin:24px 0 8px}
+@media(min-width:620px){.ride{grid-template-columns:84px 1fr auto;align-items:center}.ride .act{grid-column:auto}.time{font-size:32px}}
+@media(prefers-reduced-motion:no-preference){.ride{transition:background-color .12s}}
+.ride:hover{background:var(--surface)}
+.tag.demo{color:var(--muted)}
+.empty,.err{border-top:1px solid var(--rule);padding:32px 0;text-align:center}
+.err{border-left:4px solid var(--err-border);background:var(--err-bg);padding:16px;text-align:left}
+.err strong{color:var(--err-text)}.err strong::before{content:"⚠ "}
+.detail{padding:20px 0 48px;max-width:640px}
+.detail h1{font-size:clamp(34px,7vw,56px);letter-spacing:-.04em;line-height:.95;margin:12px 0}
+.when{font-weight:600}
+.tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.dl{display:grid;grid-template-columns:max-content 1fr;gap:8px 16px;margin:16px 0;border-top:1px solid var(--rule);padding-top:16px}
+.dl dt{color:var(--muted)}.dl dd{margin:0;font-weight:600}
+.note{background:var(--surface);border-radius:4px;padding:10px 12px;font-size:14px;margin:12px 0}
+form.f{display:grid;gap:14px;max-width:560px;padding:20px 0 48px}
+.f label{font-weight:600;font-size:14px;display:block;margin-bottom:4px}
+.f .e{display:flex;gap:6px;color:var(--err-text);font-size:14px;margin-top:4px}
+.f .e svg{flex:0 0 16px;margin-top:2px;color:var(--err-icon)}
+.row{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+footer{border-top:1px solid var(--rule);padding:18px 0;color:var(--muted);font-size:14px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap bar">
+<a class="brand" href="#/" aria-label="Rodamos, inicio"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="9" cy="21" r="6" fill="none" stroke="currentColor" stroke-width="2.5"/><circle cx="23" cy="21" r="6" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M9 21l5-10h7l2 10M14 11l4 10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg>Rodamos</a>
+<div style="display:flex;gap:8px;align-items:center"><a class="btn alt" href="#/proponer">Proponer salida</a><label class="sr" for="city">Ciudad</label><select id="city"></select></div>
+</div></header>
+<main id="app" class="wrap" tabindex="-1"><p class="meta" style="padding:24px 0">Cargando salidas…</p></main>
+<footer><div class="wrap">Rodamos reúne salidas publicadas por grupos ciclistas y te lleva a su fuente original. No gestiona reservas ni inscripciones. Las salidas marcadas «Demo» son ejemplos ficticios.</div></footer>
+
+<script>
+"use strict";
+/* ---------- Configuración (un solo lugar) ---------- */
+const CITIES=[
+ {id:"c1",name:"La Plata",slug:"la-plata",tz:"America/Argentina/Buenos_Aires"},
+ {id:"c2",name:"Ciudad de ejemplo (sin salidas)",slug:"ejemplo",tz:"America/Argentina/Buenos_Aires"}
+];
+const BANDS={morning:{label:"Mañana",from:"06:00",to:"11:59"},afternoon:{label:"Tarde",from:"12:00",to:"17:59"},night:{label:"Noche",from:"18:00",to:"23:59"}};
+const RANGES={le20:{label:"Hasta 20 km",max:20},r21:{label:"21–40 km",gt:20,max:40},r41:{label:"41–70 km",gt:40,max:70},gt70:{label:"Más de 70 km",gt:70}};
+const TERRAIN={asfalto:"Asfalto",rural:"Rural",mixto:"Mixto"};
+const WHEN={today:"Hoy",tomorrow:"Mañana",weekend:"Este fin de semana",date:"Elegir fecha",all:"Todas las próximas"};
+
+/* ---------- Lógica pura (filtros, fechas, vencimiento) ---------- */
+function nowIn(tz,d=new Date()){const p=Object.fromEntries(new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(d).map(x=>[x.type,x.value]));return{date:`${p.year}-${p.month}-${p.day}`,time:`${p.hour}:${p.minute}`}}
+function addDays(ymd,n){const d=new Date(ymd+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)}
+function dow(ymd){return new Date(ymd+"T12:00:00Z").getUTCDay()}
+function isUpcoming(r,now){return r.start_date>now.date||(r.start_date===now.date&&r.start_time>=now.time)}
+function isPublic(r,now){return r.status==="published"||r.status==="cancelled"?isUpcoming(r,now):false}
+function weekendDates(today){const d=dow(today);const sat=d===0?-1:6-d;return[addDays(today,sat),addDays(today,sat+1)].filter(x=>x>=today)}
+function inRange(km,key){const r=RANGES[key];if(!r)return true;return(r.gt===undefined||km>r.gt)&&(r.max===undefined||km<=r.max)}
+function filterRides(rides,f,now){
+ const q=(f.q||"").trim().toLowerCase().replace(/\s+/g," ");
+ return rides.filter(r=>isPublic(r,now)).filter(r=>{
+  if(f.when==="today"&&r.start_date!==now.date)return false;
+  if(f.when==="tomorrow"&&r.start_date!==addDays(now.date,1))return false;
+  if(f.when==="weekend"&&!weekendDates(now.date).includes(r.start_date))return false;
+  if(f.when==="date"&&f.date&&r.start_date!==f.date)return false;
+  if(f.band&&BANDS[f.band]&&!(r.start_time>=BANDS[f.band].from&&r.start_time<=BANDS[f.band].to))return false;
+  if(f.from&&r.start_time<f.from)return false;
+  if(q){const hay=(r.destination+" "+(r.description||"")).toLowerCase().replace(/\s+/g," ");if(!hay.includes(q))return false}
+  if(f.range&&!inRange(r.distance_km,f.range))return false;
+  if(f.terrain&&r.terrain_type!==f.terrain)return false;
+  return true}).sort((a,b)=>(a.start_date+a.start_time).localeCompare(b.start_date+b.start_time));
+}
+/* exportado para pruebas en consola: window.RodamosLogic */
+window.RodamosLogic={filterRides,inRange,weekendDates,isPublic,nowIn,addDays};
+
+/* ---------- Datos de demostración (relativos a la fecha local) ---------- */
+const ORG={A:{id:"o1",name:"Grupo de ejemplo A"},B:{id:"o2",name:"Grupo de ejemplo B"},C:{id:"o3",name:"Grupo de ejemplo C"}};
+function demoRides(today){
+ const mk=(i,off,t,dest,km,ter,mp,o,st="published",desc="")=>({id:"demo-"+i,city_id:"c1",organizer_id:o.id,organizer_name:o.name,start_date:addDays(today,off),start_time:t,meeting_point:mp,destination:dest,distance_km:km,terrain_type:ter,description:desc,source_url:null,source_type:"demo",status:st,last_verified_at:null,demo:true});
+ return[
+  mk(1,0,"23:00","Costanera",24,"asfalto","Plaza central",ORG.A,"published","Salida nocturna corta, ritmo tranquilo."),
+  mk(2,0,"23:30","Circuito rural",52,"rural","Estación de tren",ORG.B),
+  mk(3,1,"09:00","Reserva natural",65,"rural","Plaza central",ORG.A,"published","Distancia total (ida y vuelta) sin confirmar."),
+  mk(4,1,"08:00","Costanera",30,"asfalto","Acceso al parque",ORG.C,"cancelled"),
+  mk(5,3,"20:00","Parque",20,"asfalto","Acceso al parque",ORG.C),
+  mk(6,4,"07:30","Ciudad vecina",40,"mixto","Estación de tren",ORG.B),
+  mk(7,5,"06:30","Circuito rural",70,"rural","Plaza central",ORG.A),
+  mk(8,6,"08:00","Ciudad vecina",78,"mixto","Estación de tren",ORG.B),
+  mk(9,7,"08:30","Reserva natural",41,null,"Plaza central",ORG.A),
+  mk(10,9,"14:00","Costanera",85,"asfalto","Acceso al parque",ORG.C),
+  mk(11,2,"09:00","Borrador sin revisar",33,"mixto","Plaza central",ORG.A,"pending_review"),
+  mk(12,-1,"09:00","Salida ya realizada",45,"rural","Plaza central",ORG.A)
+ ];
+}
+
+/* ---------- Estado ---------- */
+const $=s=>document.querySelector(s),app=$("#app"),citySel=$("#city");
+let city=CITIES[0],lastQuery="";
+CITIES.forEach(c=>citySel.add(new Option(c.name,c.id)));
+citySel.onchange=()=>{city=CITIES.find(c=>c.id===citySel.value);location.hash="#/"};
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const MONTHS=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"],DAYS=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+const fmtDate=(ymd,t)=>{const[y,m,d]=ymd.split("-").map(Number);return`${DAYS[dow(ymd)]} ${d} de ${MONTHS[m-1]} · ${t}`};
+const safeUrl=u=>{try{const x=new URL(u);return/^https?:$/.test(x.protocol)?x.href:null}catch{return null}};
+function getRides(){const now=nowIn(city.tz);let all=city.id==="c1"?demoRides(now.date):[];try{const s=JSON.parse(localStorage.getItem("rodamos_pending")||"[]");all=all.concat(s.filter(r=>r.city_id===city.id))}catch(e){}return{all,now}}
+
+/* ---------- Vistas ---------- */
+function parseQuery(){const q=(location.hash.split("?")[1]||"");return Object.fromEntries(new URLSearchParams(q))}
+function route(){
+ const h=location.hash||"#/";const path=h.split("?")[0];
+ if(path.startsWith("#/salida/"))return viewDetail(decodeURIComponent(path.slice(9)));
+ if(path==="#/proponer")return viewForm();
+ viewHome();app.focus({preventScroll:true});
+}
+function fmtDay(d,today){const[y,m,n]=d.split("-").map(Number);return`${DAYS[dow(d)]} ${n} de ${MONTHS[m-1]}`+(d===today?" · Hoy":"")}
+function row(r){const c=r.status==="cancelled";
+ return`<li><a class="ride${c?" off":""}" href="#/salida/${encodeURIComponent(r.id)}" aria-label="${esc(r.start_time)}, ${esc(r.destination)}, ${r.distance_km} km${c?", cancelada":""}"><div class="time">${esc(r.start_time)}</div><div><h4 class="dest">${esc(r.destination)}</h4><p class="facts"><b>${r.distance_km} km</b>${r.terrain_type?`<span>${TERRAIN[r.terrain_type]}</span>`:""}${c?'<em class="st">Cancelada</em>':""}${r.demo?'<span>Demo</span>':""}</p><p class="meta">Sale desde ${esc(r.meeting_point)} · Organiza ${esc(r.organizer_name)}</p></div><span class="act" aria-hidden="true">Detalles</span></a></li>`}
+function viewHome(){
+ try{
+ const f=parseQuery(),{all,now}=getRides();lastQuery=location.hash.includes("?")?"?"+location.hash.split("?")[1]:"";
+ let sel=f.when==="all"||f.when==="weekend"?f.when:f.date;
+ if(!sel){const first=filterRides(all,{...f,when:"all"},now)[0];sel=first?first.start_date:now.date}
+ const mode=sel==="all"||sel==="weekend"?sel:"date";
+ const list=filterRides(all,{...f,when:mode,date:sel},now);
+ const days=[...Array(14)].map((_,i)=>addDays(now.date,i));
+ const cnt=d=>filterRides(all,{...f,when:"date",date:d},now).length;
+ const keys=["band","from","q","range","terrain"];
+ const chips=[];if(f.band&&BANDS[f.band])chips.push(BANDS[f.band].label);if(f.from)chips.push("Desde las "+f.from);if(f.q)chips.push("Destino: "+f.q);if(RANGES[f.range])chips.push(RANGES[f.range].label);if(TERRAIN[f.terrain])chips.push(TERRAIN[f.terrain]);
+ const title=mode==="all"?"Todas las próximas salidas":mode==="weekend"?"Este fin de semana":fmtDay(sel,now.date);
+ const go=p=>{if(!p.has("when")){p.set("when","date");p.set("date",sel)}const s=p.toString();history.replaceState(null,"","#/"+(s?"?"+s:""));viewHomeKeep()};
+ const params=()=>new URLSearchParams(location.hash.split("?")[1]||"");
+ const radio=(name,opts,val)=>`<div class="opts">${Object.entries(opts).map(([k,l])=>`<label class="opt"><input type="radio" name="${name}" value="${k}" ${val===k?"checked":""}><span>${esc(l.label||l)}</span></label>`).concat([`<label class="opt"><input type="radio" name="${name}" value="" ${!val?"checked":""}><span>Cualquiera</span></label>`]).join("")}</div>`;
+ const groups=mode==="date"?[[null,list]]:Object.entries(list.reduce((a,r)=>((a[r.start_date]=a[r.start_date]||[]).push(r),a),{}));
+ const next=mode==="date"?filterRides(all,{...f,when:"all"},now).find(r=>r.start_date>sel):null;
+ const empty=`<div class="empty"><p><strong>No hay salidas ${mode==="date"?"para este día":"con esos criterios"}.</strong></p><p class="meta">${chips.length?"Quitá algún filtro o probá otro día.":"Probá otro día o proponé una salida."}</p><div class="tags" style="justify-content:center">${next?`<button class="btn" id="nx">Ir a ${esc(fmtDay(next.start_date,now.date))}</button>`:""}${chips.length?`<button class="btn alt" id="clear2">Limpiar filtros</button>`:`<a class="btn alt" href="#/proponer">Proponer una salida</a>`}</div></div>`;
+ app.innerHTML=`<h1 class="ttl">¿Cuándo salimos?</h1>
+ <div class="strip" role="group" aria-label="Elegir fecha"><button class="day txt" data-p="all" aria-pressed="${mode==="all"}">Todas</button><button class="day txt" data-p="weekend" aria-pressed="${mode==="weekend"}">Fin de semana</button>${days.map(d=>{const n=cnt(d);return`<button class="day" data-d="${d}" aria-pressed="${mode==="date"&&sel===d}" aria-label="${esc(fmtDay(d,now.date))}, ${n} salidas"><span>${DAYS[dow(d)].slice(0,3)}</span><b>${+d.slice(8)}</b><i>${n||"–"}</i></button>`}).join("")}</div>
+ <div class="layout">
+ <aside class="filters" aria-label="Filtros"><button class="btn alt fbtn" aria-expanded="false" aria-controls="fb" id="fbtn">Filtros${chips.length?` (${chips.length} activos)`:""}</button>
+ <form id="fb" class="fbody" onsubmit="return false">
+  <fieldset><legend>Horario</legend>${radio("band",BANDS,f.band)}<label class="lab" for="from" style="margin-top:8px;font-weight:400">Salida desde la hora (opcional)</label><input class="field" id="from" type="time" name="from" value="${esc(f.from||"")}"></fieldset>
+  <fieldset><legend><label for="q">Destino</label></legend><input class="field" id="q" type="search" name="q" placeholder="Ej.: reserva, costanera" value="${esc(f.q||"")}"></fieldset>
+  <fieldset><legend>Distancia</legend>${radio("range",RANGES,f.range)}</fieldset>
+  <fieldset><legend>Tipo de camino</legend>${radio("terrain",TERRAIN,f.terrain)}</fieldset>
+  <button type="button" class="btn alt" id="clear">Limpiar filtros</button>
+ </form></aside>
+ <section aria-labelledby="rt"><div class="res-head"><div><h2 id="rt" tabindex="-1">${esc(title)}</h2><p class="meta" role="status" id="resultados" tabindex="-1">${list.length} ${list.length===1?"salida":"salidas"} en ${esc(city.name)}</p></div><label class="cal">Otra fecha <input class="field" style="width:auto" type="date" id="cal" min="${now.date}" value="${mode==="date"?sel:""}"></label></div>
+ ${chips.length?`<div class="chips" aria-label="Filtros activos">${chips.map(c=>`<span class="chip">${esc(c)}</span>`).join("")}</div>`:""}
+ ${list.length?groups.map(([d,rs])=>`${d?`<h3 class="gh">${esc(fmtDay(d,now.date))}</h3>`:""}<ul class="agenda">${rs.map(row).join("")}</ul>`).join(""):empty}
+ </section></div>`;
+ const focusDay=()=>{const e=document.querySelector('.day[aria-pressed="true"]');if(e)e.focus()};
+ app.querySelectorAll(".day").forEach(b=>b.onclick=()=>{const p=params();p.delete("date");if(b.dataset.p)p.set("when",b.dataset.p);else{p.set("when","date");p.set("date",b.dataset.d)}go(p);focusDay()});
+ $("#cal").onchange=e=>{if(!e.target.value)return;const p=params();p.set("when","date");p.set("date",e.target.value);go(p)};
+ const nx=$("#nx");if(nx)nx.onclick=()=>{const p=params();p.set("when","date");p.set("date",next.start_date);go(p)};
+ const form=$("#fb"),apply=()=>{const p=params();keys.forEach(k=>p.delete(k));new FormData(form).forEach((v,k)=>{v=String(v).trim();if(v)p.set(k,v)});go(p)};
+ form.addEventListener("change",apply);form.addEventListener("input",e=>{if(e.target.name==="q")apply()});
+ const clr=()=>{const p=params();keys.forEach(k=>p.delete(k));go(p)};$("#clear").onclick=clr;const c2=$("#clear2");if(c2)c2.onclick=clr;
+ const fb=$("#fbtn");fb.onclick=()=>{const o=$("#fb").classList.toggle("open");fb.setAttribute("aria-expanded",o)};
+ const st=$(".strip"),on=$('.day[aria-pressed="true"]');if(on)st.scrollLeft=on.offsetLeft-st.clientWidth/2+on.offsetWidth/2;
+ }catch(e){console.error(e);app.innerHTML=`<div class="err" style="margin:24px 0"><p><strong>No pudimos cargar las salidas.</strong></p><button class="btn" onclick="route()">Reintentar</button></div>`}
+}
+function viewHomeKeep(){const a=document.activeElement,id=a&&a.id,name=a&&a.name,open=$("#fb")?.classList.contains("open"),pos=a&&a.selectionStart;viewHome();if(open){$("#fb").classList.add("open");$("#fbtn").setAttribute("aria-expanded","true")}
+ const el=id?document.getElementById(id):null;if(el&&el.type==="search"){el.focus();try{el.setSelectionRange(pos,pos)}catch(e){}}else if(name){const t=document.querySelector(`[name="${name}"]:checked`)||document.querySelector(`[name="${name}"]`);t&&t.focus()}}
+function viewDetail(id){
+ const{all,now}=getRides();const r=all.find(x=>x.id===id);
+ if(!r||!(r.status==="published"||r.status==="cancelled")){app.innerHTML=`<div class="detail"><div class="err"><p><strong>No encontramos esa salida.</strong></p><p class="meta">Puede haber sido retirada o ya no estar disponible.</p><a class="btn" href="#/">Volver a las salidas</a></div></div>`;return}
+ const past=!isUpcoming(r,now),canc=r.status==="cancelled",url=safeUrl(r.source_url);
+ const label=r.source_type==="contact"?"Contactar al organizador":"Consultar salida original";
+ app.innerHTML=`<article class="detail"><a href="#/${lastQuery}">← Volver a las salidas</a>
+ <div class="tags" style="margin-top:12px">${r.demo?'<span class="tag demo">Datos de demostración</span>':""}${canc?'<span class="st">Cancelada</span>':""}${past?'<span class="st soft">Ya pasó</span>':""}</div>
+ <h1 tabindex="-1" id="dt">${esc(r.destination)}</h1><p class="when" style="font-size:20px;margin:0">${esc(fmtDate(r.start_date,r.start_time))}</p>
+ <dl class="dl"><dt>Punto de encuentro</dt><dd>${esc(r.meeting_point)}</dd><dt>Distancia</dt><dd>${r.distance_km} km</dd><dt>Tipo de camino</dt><dd>${r.terrain_type?TERRAIN[r.terrain_type]:"No especificado"}</dd><dt>Organiza</dt><dd>${esc(r.organizer_name)}</dd>${r.last_verified_at?`<dt>Verificada</dt><dd>${esc(r.last_verified_at)}</dd>`:"<dt>Verificación</dt><dd>Sin verificar</dd>"}</dl>
+ ${r.description?`<p>${esc(r.description)}</p>`:""}
+ ${canc||past?`<p class="note">Esta salida ${canc?"fue cancelada":"ya se realizó"}; no hay acciones disponibles.</p>`:url?`<a class="btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${label}</a><p class="meta">Rodamos no gestiona reservas: la inscripción, si existe, se hace en la fuente.</p>`:`<button class="btn" disabled>${label}</button><p class="note">${r.demo?"Es un ejemplo ficticio: no tiene enlace de origen.":"Esta salida todavía no tiene un enlace de origen."}</p>`}
+ </article>`;$("#dt").focus();window.scrollTo(0,0);
+}
+function viewForm(){
+ const t=nowIn(city.tz).date;
+ app.innerHTML=`<form class="f" id="pf" novalidate><div><a href="#/">← Volver</a><h1 style="margin:12px 0 4px;letter-spacing:-.03em">Proponer una salida</h1><p class="meta">Tu propuesta queda pendiente de revisión. No se publica hasta que se verifique.</p></div>
+ <div class="row"><div><label for="d">Fecha</label><input class="field" id="d" name="start_date" type="date" min="${t}" required></div><div><label for="h">Hora</label><input class="field" id="h" name="start_time" type="time" required></div></div>
+ <div><label for="mp">Punto de encuentro</label><input class="field" id="mp" name="meeting_point" required></div>
+ <div><label for="de">Destino</label><input class="field" id="de" name="destination" required></div>
+ <div class="row"><div><label for="km">Distancia total (km)</label><input class="field" id="km" name="distance_km" type="number" step="0.1" min="1" max="300" inputmode="decimal" required></div>
+ <div><label for="tr">Tipo de camino</label><select class="field" id="tr" name="terrain_type"><option value="">No especificado</option>${Object.entries(TERRAIN).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select></div></div>
+ <div><label for="og">Grupo organizador</label><input class="field" id="og" name="organizer_name" required></div>
+ <div><label for="su">Enlace de origen (publicación o canal público)</label><input class="field" id="su" name="source_url" type="url" placeholder="https://" required></div>
+ <div><label for="ds">Descripción (opcional)</label><input class="field" id="ds" name="description" maxlength="300"></div>
+ <button class="btn" type="submit">Enviar propuesta</button><div id="msg" role="status"></div></form>`;
+ $("#pf").onsubmit=e=>{e.preventDefault();const v=Object.fromEntries(new FormData(e.target).entries());const errs=[];
+  const bad=(id,m)=>errs.push([id,m]);const now=nowIn(city.tz);
+  if(!v.start_date)bad("d","Elegí una fecha.");if(!v.start_time)bad("h","Indicá la hora.");
+  if(v.start_date&&v.start_time&&(v.start_date+v.start_time)<(now.date+now.time))bad("d","La salida debe ser futura.");
+  ["meeting_point","destination","organizer_name"].forEach(k=>{if(!v[k].trim())bad({meeting_point:"mp",destination:"de",organizer_name:"og"}[k],"Completá este campo.")});
+  const km=parseFloat(v.distance_km);if(!(km>0&&km<=300))bad("km","Ingresá una distancia entre 1 y 300 km.");
+  if(v.terrain_type&&!TERRAIN[v.terrain_type])bad("tr","Elegí un valor de la lista.");
+  const u=safeUrl(v.source_url);if(!u)bad("su","Ingresá un enlace válido que empiece con http:// o https://.");
+  document.querySelectorAll(".e").forEach(x=>x.remove());document.querySelectorAll("[aria-invalid]").forEach(x=>x.removeAttribute("aria-invalid"));
+  if(errs.length){errs.forEach(([id,m])=>{const el=document.getElementById(id);el.setAttribute("aria-invalid","true");el.insertAdjacentHTML("afterend",`<div class="e" role="alert"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4v5M8 11v1.5" stroke="currentColor" stroke-width="1.5"/></svg><span>Error: ${m}</span></div>`)});document.getElementById(errs[0][0]).focus();return}
+  const rec={id:"pend-"+Date.now(),city_id:city.id,organizer_id:null,organizer_name:v.organizer_name.trim(),start_date:v.start_date,start_time:v.start_time,meeting_point:v.meeting_point.trim(),destination:v.destination.trim(),distance_km:km,terrain_type:v.terrain_type||null,description:v.description.trim(),source_url:u,source_type:"user_submission",status:"pending_review",created_at:new Date().toISOString()};
+  try{const s=JSON.parse(localStorage.getItem("rodamos_pending")||"[]");s.push(rec);localStorage.setItem("rodamos_pending",JSON.stringify(s))}catch(x){}
+  $("#msg").innerHTML=`<p class="note"><strong>Propuesta recibida.</strong> Queda en revisión y todavía no es pública. (En esta versión de demostración se guarda solo en este navegador.)</p>`;e.target.reset()};
+}
+addEventListener("hashchange",route);route();
+</script>
+</body>
+</html>
