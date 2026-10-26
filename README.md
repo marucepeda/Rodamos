@@ -6,7 +6,7 @@ Rodamos es una webapp para descubrir salidas grupales en bicicleta. Reúne en un
 
 > **Estado: prototipo de MVP.** Es una interfaz funcional con datos de demostración ficticios. Todavía no tiene base de datos, panel de administración ni despliegue propio. Ver [Limitaciones](#limitaciones).
 
-**Demo en vivo:** `https://<tu-usuario>.github.io/<nombre-del-repo>/` (reemplazá por tu URL de GitHub Pages cuando la actives).
+**Demo en vivo:** `[https://<tu-usuario>.github.io/<nombre-del-repo>/](https://marucepeda.github.io/Rodamos/`.
 
 ## Qué hace hoy
 
